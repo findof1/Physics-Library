@@ -25,7 +25,7 @@ public:
 
   float zoom = 1;
 
-  Renderer();
+  Renderer(std::string windowName);
   bool rendering();
 
   void displayFrame();
@@ -33,21 +33,23 @@ public:
   void close();
 
   void drawSquare(glm::vec2 position, glm::vec2 scale, float rotation, glm::vec4 color);
+  void drawCircle(glm::vec2 position, glm::vec2 scale, float rotation, glm::vec4 color);
   void renderText(std::string text, float x, float y, float scale, glm::vec3 color);
 
 private:
-  GLuint VAO, VBO, EBO;
-
+  GLuint SquareVAO, SquareVBO, SquareEBO;
+  GLuint CircleVBO, CircleVAO;
   std::map<GLchar, Character> Characters;
-  unsigned int TextVAO, TextVBO;
+  GLuint TextVAO, TextVBO;
 
   std::unique_ptr<Shader> shader;
   std::unique_ptr<Shader> textShader;
 
-  void initGLFW();
+  void initGLFW(std::string windowName);
   void initGlad();
   void initFreeType2();
   void initSquareBuffers();
+  void initCircleBuffers();
 };
 
 #endif

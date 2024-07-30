@@ -4,6 +4,7 @@
 #include <iostream>
 #include <glm/gtc/type_ptr.hpp>
 #include <ft2build.h>
+#include <vector>
 #include FT_FREETYPE_H
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
@@ -15,12 +16,13 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height)
   renderer->ScreenH = height;
 }
 
-Renderer::Renderer()
+Renderer::Renderer(std::string windowName)
 {
-  initGLFW();
+  initGLFW(windowName);
   initGlad();
   initFreeType2();
   initSquareBuffers();
+  initCircleBuffers();
 }
 
 bool Renderer::rendering()
@@ -63,9 +65,33 @@ void Renderer::drawSquare(glm::vec2 position, glm::vec2 scale, float rotation, g
   shader->setMat4("model", model);
   shader->setVec4("inColor", color);
 
-  glBindVertexArray(VAO);
+  glBindVertexArray(SquareVAO);
 
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+}
+
+void Renderer::drawCircle(glm::vec2 position, glm::vec2 scale, float rotation, glm::vec4 color)
+{
+  shader->use();
+
+  glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(ScreenW), 0.0f, static_cast<float>(ScreenH));
+
+  glm::mat4 view = glm::mat4(1.0f);
+
+  glm::mat4 model = glm::mat4(1.0f);
+  model = glm::translate(model, glm::vec3(position, 0.0f));
+  model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
+  model = glm::scale(model, glm::vec3(scale, 1.0f));
+
+  shader->setMat4("projection", projection);
+  shader->setMat4("view", view);
+  shader->setMat4("model", model);
+  shader->setVec4("inColor", color);
+
+  glBindVertexArray(CircleVAO);
+
+  // 27 comes from numsegments + 2
+  glDrawArrays(GL_TRIANGLE_FAN, 0, 27);
 }
 
 void Renderer::renderText(std::string text, float x, float y, float scale, glm::vec3 color)
@@ -108,7 +134,7 @@ void Renderer::renderText(std::string text, float x, float y, float scale, glm::
   glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void Renderer::initGLFW()
+void Renderer::initGLFW(std::string windowName)
 {
   glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -119,7 +145,7 @@ void Renderer::initGLFW()
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-  window = glfwCreateWindow(ScreenW, ScreenH, "Cradex Browser", NULL, NULL);
+  window = glfwCreateWindow(ScreenW, ScreenH, windowName.c_str(), NULL, NULL);
   if (window == NULL)
   {
     std::cout << "Failed to create GLFW window" << std::endl;
@@ -248,19 +274,50 @@ void Renderer::initSquareBuffers()
   GLuint indices[] = {
       0, 1, 3,
       1, 2, 3};
-  glGenVertexArrays(1, &VAO);
-  glGenBuffers(1, &VBO);
-  glGenBuffers(1, &EBO);
+  glGenVertexArrays(1, &SquareVAO);
+  glGenBuffers(1, &SquareVBO);
+  glGenBuffers(1, &SquareEBO);
 
-  glBindVertexArray(VAO);
+  glBindVertexArray(SquareVAO);
 
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
+  glBindBuffer(GL_ARRAY_BUFFER, SquareVBO);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, SquareEBO);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
   glEnableVertexAttribArray(0);
+  glBindVertexArray(0);
+}
+
+void Renderer::initCircleBuffers()
+{
+  const int numSegments = 25;
+  const float radius = 0.5f;
+  std::vector<float> vertices;
+
+  vertices.push_back(0.0f);
+  vertices.push_back(0.0f);
+
+  for (int i = 0; i <= numSegments; ++i)
+  {
+    float angle = 2.0f * 3.141592653589 * i / numSegments;
+    vertices.push_back(radius * cos(angle));
+    vertices.push_back(radius * sin(angle));
+  }
+
+  glGenVertexArrays(1, &CircleVAO);
+  glGenBuffers(1, &CircleVBO);
+
+  glBindVertexArray(CircleVAO);
+
+  glBindBuffer(GL_ARRAY_BUFFER, CircleVBO);
+  glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+
+  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void *)0);
+  glEnableVertexAttribArray(0);
+
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindVertexArray(0);
 }
