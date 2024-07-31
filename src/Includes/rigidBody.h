@@ -26,6 +26,8 @@ public:
   RigidBody(glm::vec2 position, float rotation, float width, float height, float mass);
   void update(double deltaTime);
   void applyForce(glm::vec2 force);
+
+  bool colliding(RigidBody rectangle);
 };
 
 #endif

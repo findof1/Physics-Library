@@ -13,7 +13,11 @@ bool darkMode = true;
 int main()
 {
 	Renderer renderer("Physics Library");
-	RigidBody square(glm::vec2(500.0f, 500.0f), 0.0f, 1.0f, 1.0f, 1.0f);
+	RigidBody square(glm::vec2(500.0f, 500.0f), 0.0f, 100.0f, 100.0f, 1.0f);
+	square.GRAVITY = glm::vec2(0.0f, 0.0f);
+
+	RigidBody square2(glm::vec2(700.0f, 500.0f), 0.0f, 100.0f, 100.0f, 1.0f);
+	square2.GRAVITY = glm::vec2(0.0f, 0.0f);
 
 	double deltaTime;
 	clock_t oldTime = clock();
@@ -25,6 +29,7 @@ int main()
 		oldTime = currentTime;
 
 		square.update(deltaTime);
+		square2.update(deltaTime);
 
 		processInput(renderer.window);
 
@@ -37,7 +42,11 @@ int main()
 			renderer.displayBackground(250, 250, 250, 1);
 		}
 
-		renderer.drawSquare(square.position, glm::vec2(100.0f, 100.0f), square.rotation, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
+		renderer.drawSquare(square.position, glm::vec2(square.width, square.height), square.rotation, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
+
+		renderer.drawSquare(square2.position, glm::vec2(square2.width, square2.height), square2.rotation, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
+
+		std::cout << square.colliding(square2) << std::endl;
 
 		renderer.displayFrame();
 	}
