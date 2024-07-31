@@ -13,15 +13,16 @@ bool darkMode = true;
 int main()
 {
 	Renderer renderer("Physics Library");
-	RigidBody square(glm::vec2(0.0f, 0.0f), 0.0f, 1.0f, 1.0f, 1.0f);
+	RigidBody square(glm::vec2(500.0f, 500.0f), 0.0f, 1.0f, 1.0f, 1.0f);
 
 	double deltaTime;
 	clock_t oldTime = clock();
 	while (renderer.rendering())
 	{
-		deltaTime = clock() - oldTime;
-		double fps = (1 / deltaTime) * 1000;
-		oldTime = clock();
+		clock_t currentTime = clock();
+		deltaTime = static_cast<double>(currentTime - oldTime) / CLOCKS_PER_SEC;
+		double fps = 1 / deltaTime;
+		oldTime = currentTime;
 
 		square.update(deltaTime);
 
@@ -36,11 +37,7 @@ int main()
 			renderer.displayBackground(250, 250, 250, 1);
 		}
 
-		renderer.drawSquare(glm::vec2(725.0f, 500.0f), glm::vec2(550.0f, 120.0f), 0.0f, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
-
-		renderer.drawCircle(glm::vec2(1225.0f, 700.0f), glm::vec2(500.0f, 500.0f), 0.0f, glm::vec4(0.0f, 0.5f, 0.5f, 1.0f));
-
-		renderer.renderText("This is sample text", 500.0f, 500.0f, 1.0f, glm::vec3(1.0, 1.0f, 1.0f));
+		renderer.drawSquare(square.position, glm::vec2(100.0f, 100.0f), square.rotation, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
 
 		renderer.displayFrame();
 	}

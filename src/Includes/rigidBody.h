@@ -11,6 +11,7 @@
 class RigidBody
 {
 public:
+  glm::vec2 GRAVITY = glm::vec2(0.0f, -981.00f);
   glm::vec2 position;
   float rotation;
   float width;
@@ -21,8 +22,6 @@ public:
   glm::vec2 linearVelocity;
   float angularVelocity;
   glm::vec2 forceVector;
-
-  
 
   RigidBody(glm::vec2 position, float rotation, float width, float height, float mass);
   void update(double deltaTime);

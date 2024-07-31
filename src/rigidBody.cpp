@@ -7,7 +7,7 @@ RigidBody::RigidBody(glm::vec2 position, float rotation, float width, float heig
 
 void RigidBody::update(double deltaTime)
 {
-  applyForce(glm::vec2(0.0f, -1.0f));
+  applyForce(GRAVITY * mass);
 
   glm::vec2 acceleration = forceVector / mass;
   linearVelocity += glm::vec2(acceleration.x * deltaTime, acceleration.y * deltaTime);
@@ -16,7 +16,7 @@ void RigidBody::update(double deltaTime)
 
   forceVector = glm::vec2(0.0f, 0.0f);
 
-  std::cout << position.x << position.y << std::endl;
+  std::cout << position.x << position.y << " D: " << deltaTime << std::endl;
 }
 
 void RigidBody::applyForce(glm::vec2 force)
