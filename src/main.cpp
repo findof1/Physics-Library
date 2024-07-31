@@ -4,6 +4,7 @@
 #include <glm/glm/gtc/matrix_transform.hpp>
 #include "Includes/shader.h"
 #include "Includes/renderer.h"
+#include "Includes/rigidBody.h"
 
 void processInput(GLFWwindow *window);
 
@@ -12,9 +13,18 @@ bool darkMode = true;
 int main()
 {
 	Renderer renderer("Physics Library");
+	RigidBody square(glm::vec2(0.0f, 0.0f), 0.0f, 1.0f, 1.0f, 1.0f);
 
+	double deltaTime;
+	clock_t oldTime = clock();
 	while (renderer.rendering())
 	{
+		deltaTime = clock() - oldTime;
+		double fps = (1 / deltaTime) * 1000;
+		oldTime = clock();
+
+		square.update(deltaTime);
+
 		processInput(renderer.window);
 
 		if (darkMode)
