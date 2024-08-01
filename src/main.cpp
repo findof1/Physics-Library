@@ -17,16 +17,20 @@ RigidBody square2(glm::vec2(700.0f, 500.0f), 0.0f, 100.0f, 100.0f, 1.0f);
 
 int main()
 {
-	square.GRAVITY = glm::vec2(0.0f, -45.0f);
+	square.GRAVITY = glm::vec2(0.0f, 0.0f);
 	square2.GRAVITY = glm::vec2(0.0f, 0.0f);
 
-	double deltaTime;
+	float deltaTime;
 	clock_t oldTime = clock();
 	while (renderer.rendering())
 	{
 		clock_t currentTime = clock();
 		deltaTime = static_cast<double>(currentTime - oldTime) / CLOCKS_PER_SEC;
-		double fps = 1 / deltaTime;
+		float fps = 1 / deltaTime;
+		if (abs(deltaTime) < 0.00001)
+		{
+			fps = 500;
+		}
 		oldTime = currentTime;
 
 		square.update(deltaTime);
@@ -47,7 +51,12 @@ int main()
 
 		renderer.drawSquare(square2.position, glm::vec2(square2.width, square2.height), square2.rotation, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
 
-		std::cout << square.colliding(square2) << std::endl;
+		if (square.colliding(&square2))
+		{
+			renderer.renderText("Touching", 700, 700, 1, glm::vec3(1.0f));
+		}
+
+		renderer.renderText("FPS: " + std::to_string(fps), 1000, 500, 1, glm::vec3(1.0f));
 
 		renderer.displayFrame();
 	}

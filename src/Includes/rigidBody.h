@@ -29,7 +29,7 @@ public:
   void update(double deltaTime);
   void applyForce(glm::vec2 force, glm::vec2 point = glm::vec2(0.0f, 0.0f));
 
-  bool colliding(RigidBody rectangle);
+  bool colliding(RigidBody *rectangle);
 };
 
 #endif
