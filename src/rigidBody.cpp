@@ -7,12 +7,18 @@ RigidBody::RigidBody(glm::vec2 position, float rotation, float width, float heig
 
 void RigidBody::update(double deltaTime)
 {
-  applyForce(GRAVITY * mass);
+  applyForce(GRAVITY * mass, glm::vec2(position.x, position.y));
 
-  glm::vec2 acceleration = forceVector / mass;
-  linearVelocity += glm::vec2(acceleration.x * deltaTime, acceleration.y * deltaTime);
-
+  glm::vec2 linearAcceleration = forceVector / mass;
+  linearVelocity += glm::vec2(linearAcceleration.x * deltaTime, linearAcceleration.y * deltaTime);
   position += glm::vec2(linearVelocity.x * deltaTime, linearVelocity.y * deltaTime);
+
+  float angularAcceleration = torque / mass;
+  angularVelocity += angularAcceleration * deltaTime;
+  rotation += angularVelocity * deltaTime;
+
+  float angularFrictionCoefficient = 0.98f;
+  angularVelocity *= angularFrictionCoefficient;
 
   forceVector = glm::vec2(0.0f, 0.0f);
 }
@@ -36,7 +42,10 @@ bool RigidBody::colliding(RigidBody rectangle)
   return true;
 }
 
-void RigidBody::applyForce(glm::vec2 force)
+void RigidBody::applyForce(glm::vec2 force, glm::vec2 point)
 {
   forceVector += force;
+
+  glm::vec2 offset = point - position;
+  torque += glm::cross(glm::vec3(offset, 0.0f), glm::vec3(force, 0.0f)).z;
 }

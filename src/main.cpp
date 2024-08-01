@@ -10,13 +10,14 @@ void processInput(GLFWwindow *window);
 
 bool darkMode = true;
 
+Renderer renderer("Physics Library");
+RigidBody square(glm::vec2(500.0f, 500.0f), 0.0f, 100.0f, 100.0f, 1.0f);
+
+RigidBody square2(glm::vec2(700.0f, 500.0f), 0.0f, 100.0f, 100.0f, 1.0f);
+
 int main()
 {
-	Renderer renderer("Physics Library");
-	RigidBody square(glm::vec2(500.0f, 500.0f), 0.0f, 100.0f, 100.0f, 1.0f);
-	square.GRAVITY = glm::vec2(0.0f, 0.0f);
-
-	RigidBody square2(glm::vec2(700.0f, 500.0f), 0.0f, 100.0f, 100.0f, 1.0f);
+	square.GRAVITY = glm::vec2(0.0f, -45.0f);
 	square2.GRAVITY = glm::vec2(0.0f, 0.0f);
 
 	double deltaTime;
@@ -59,4 +60,16 @@ void processInput(GLFWwindow *window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		square.applyForce(glm::vec2(50, 0), glm::vec2(square.position.x, square.position.y));
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		square.applyForce(glm::vec2(-50, 0), glm::vec2(square.position.x, square.position.y));
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		square.applyForce(glm::vec2(0, 50), glm::vec2(square.position.x, square.position.y));
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		square.applyForce(glm::vec2(0, -50), glm::vec2(square.position.x, square.position.y));
+	if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
+		square.applyForce(glm::vec2(1, 0), glm::vec2(square.position.x, square.position.y - 1));
+	if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS)
+		square.applyForce(glm::vec2(1, 0), glm::vec2(square.position.x, square.position.y + 1));
 }

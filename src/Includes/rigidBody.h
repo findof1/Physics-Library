@@ -18,14 +18,16 @@ public:
   float height;
 
   float mass;
-  float momentOfInertia;
-  glm::vec2 linearVelocity;
-  float angularVelocity;
   glm::vec2 forceVector;
+  glm::vec2 linearVelocity;
+
+  float momentOfInertia;
+  float torque;
+  float angularVelocity;
 
   RigidBody(glm::vec2 position, float rotation, float width, float height, float mass);
   void update(double deltaTime);
-  void applyForce(glm::vec2 force);
+  void applyForce(glm::vec2 force, glm::vec2 point = glm::vec2(0.0f, 0.0f));
 
   bool colliding(RigidBody rectangle);
 };
