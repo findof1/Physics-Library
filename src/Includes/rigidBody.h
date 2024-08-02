@@ -7,6 +7,7 @@
 #include <glm/glm/glm.hpp>
 #include <glm/glm/gtc/matrix_transform.hpp>
 #include "shader.h"
+#include "renderer.h"
 
 class RigidBody
 {
@@ -16,6 +17,7 @@ public:
   float rotation;
   float width;
   float height;
+  float restitution = 0.5;
 
   float mass;
   glm::vec2 forceVector;
@@ -28,8 +30,9 @@ public:
   RigidBody(glm::vec2 position, float rotation, float width, float height, float mass);
   void update(double deltaTime);
   void applyForce(glm::vec2 force, glm::vec2 point = glm::vec2(0.0f, 0.0f));
+  void applyTorque(float torqueAdd);
 
-  bool colliding(RigidBody *rectangle);
+  void resolveCollision(RigidBody *rectangle, double deltaTime, Renderer *renderer);
 };
 
 #endif

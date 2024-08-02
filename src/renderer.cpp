@@ -2,6 +2,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <cmath>
 #include <glm/gtc/type_ptr.hpp>
 #include <ft2build.h>
 #include <vector>
@@ -59,6 +60,33 @@ void Renderer::drawSquare(glm::vec2 position, glm::vec2 scale, float rotation, g
   model = glm::translate(model, glm::vec3(position, 0.0f));
   model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
   model = glm::scale(model, glm::vec3(scale, 1.0f));
+
+  shader->setMat4("projection", projection);
+  shader->setMat4("view", view);
+  shader->setMat4("model", model);
+  shader->setVec4("inColor", color);
+
+  glBindVertexArray(SquareVAO);
+
+  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+}
+
+void Renderer::drawVector(glm::vec2 startPosition, glm::vec2 vector, glm::vec4 color)
+{
+  shader->use();
+
+  glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(ScreenW), 0.0f, static_cast<float>(ScreenH));
+
+  glm::mat4 view = glm::mat4(1.0f);
+
+  float magnitude = sqrt(vector.x * vector.x + vector.y * vector.y);
+  float cosTheta = vector.x / magnitude;
+  float angleRadians = acos(cosTheta);
+
+  glm::mat4 model = glm::mat4(1.0f);
+  model = glm::translate(model, glm::vec3(startPosition.x + vector.x / 2, startPosition.y + vector.y / 2, 0.0f));
+  model = glm::rotate(model, ((float)3.141592 / 2) + angleRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+  model = glm::scale(model, glm::vec3(1, magnitude, 1.0f));
 
   shader->setMat4("projection", projection);
   shader->setMat4("view", view);

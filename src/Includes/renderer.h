@@ -34,6 +34,8 @@ public:
 
   void drawSquare(glm::vec2 position, glm::vec2 scale, float rotation, glm::vec4 color);
   void drawCircle(glm::vec2 position, glm::vec2 scale, float rotation, glm::vec4 color);
+  void drawVector(glm::vec2 startPosition, glm::vec2 vector, glm::vec4 color);
+
   void renderText(std::string text, float x, float y, float scale, glm::vec3 color);
 
 private:
