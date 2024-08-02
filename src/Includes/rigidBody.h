@@ -19,6 +19,8 @@ public:
   float height;
   float restitution = 0.5;
 
+  bool isStatic = false;
+
   float mass;
   glm::vec2 forceVector;
   glm::vec2 linearVelocity;

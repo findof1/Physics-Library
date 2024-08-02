@@ -10,34 +10,46 @@ float projectVertex(const glm::vec2 &vertex, const glm::vec2 &axis)
   return glm::dot(vertex, axis);
 }
 
-glm::vec2 computeNormal(const glm::vec2 &start, const glm::vec2 &end)
+glm::vec2 computeEdgeNormal(const glm::vec2 &start, const glm::vec2 &end)
 {
-  return glm::normalize(glm::vec2(end.y - start.y, start.x - end.x));
+  glm::vec2 edgeNormal = glm::vec2(end.y - start.y, start.x - end.x);
+  if (glm::length(edgeNormal) == 0.0f)
+  {
+    return glm::vec2(0, 0);
+  }
+  return glm::normalize(edgeNormal);
 }
 
 glm::vec2 getVertex(int index, RigidBody *rect)
 {
   float halfWidth = rect->width / 2;
   float halfHeight = rect->height / 2;
-  switch (index)
-  {
-  case 0:
-    return glm::vec2(rect->position.x - halfWidth, rect->position.y + halfHeight);
-  case 1:
-    return glm::vec2(rect->position.x + halfWidth, rect->position.y + halfHeight);
-  case 2:
-    return glm::vec2(rect->position.x + halfWidth, rect->position.y - halfHeight);
-  case 3:
-    return glm::vec2(rect->position.x - halfWidth, rect->position.y - halfHeight);
-  }
-  return glm::vec2(rect->position.x - halfWidth, rect->position.y + halfHeight);
+
+  glm::vec2 localVertices[4];
+  localVertices[0] = glm::vec2(-halfWidth, halfHeight);
+  localVertices[1] = glm::vec2(halfWidth, halfHeight);
+  localVertices[2] = glm::vec2(halfWidth, -halfHeight);
+  localVertices[3] = glm::vec2(-halfWidth, -halfHeight);
+
+  glm::vec2 localVertex = localVertices[index];
+
+  float angle = glm::radians(rect->rotation);
+  glm::mat2 rotationMatrix = glm::mat2(
+      glm::cos(angle), -glm::sin(angle),
+      glm::sin(angle), glm::cos(angle));
+
+  glm::vec2 rotatedVertex = rotationMatrix * localVertex;
+
+  glm::vec2 worldVertex = rect->position + rotatedVertex;
+
+  return worldVertex;
 }
 
 glm::vec2 getNormal(int edgeIndex, RigidBody *rect)
 {
   glm::vec2 start = getVertex(edgeIndex, rect);
   glm::vec2 end = getVertex((edgeIndex + 1) % 4, rect);
-  return computeNormal(start, end);
+  return computeEdgeNormal(start, end);
 }
 
 RigidBody::RigidBody(glm::vec2 position, float rotation, float width, float height, float mass) : position(position), rotation(rotation), width(width), height(height), mass(mass)
@@ -65,29 +77,39 @@ void RigidBody::update(double deltaTime)
 
 void RigidBody::resolveCollision(RigidBody *rectangle, double deltaTime, Renderer *renderer)
 {
+  if (isStatic && rectangle->isStatic)
+    return;
+
   float minOverlap = FLT_MAX;
   glm::vec2 mtvAxis;
 
-  for (int j = 0; j < 4; j++)
+  for (int j = 0; j < 8; j++)
   {
-    glm::vec2 axis = getNormal(j, this);
+    glm::vec2 axis;
+    if (j < 4)
+    {
+      axis = getNormal(j, this);
+    }
+    else
+    {
+      axis = getNormal(j, rectangle);
+    }
 
-    float minA, maxA;
+    if (axis == glm::vec2(0.0f, 0.0f))
+      continue;
+
+    float minA, maxA, minB, maxB;
     minA = maxA = projectVertex(getVertex(0, this), axis);
     for (int i = 1; i < 4; i++)
     {
-
       float projection = projectVertex(getVertex(i, this), axis);
       minA = std::min(minA, projection);
       maxA = std::max(maxA, projection);
     }
 
-    float minB, maxB;
     minB = maxB = projectVertex(getVertex(0, rectangle), axis);
-
     for (int i = 1; i < 4; i++)
     {
-
       float projection = projectVertex(getVertex(i, rectangle), axis);
       minB = std::min(minB, projection);
       maxB = std::max(maxB, projection);
@@ -98,80 +120,43 @@ void RigidBody::resolveCollision(RigidBody *rectangle, double deltaTime, Rendere
       return;
     }
 
-    float overlap = std::min(maxA, maxB) - std::max(minA, minB);
-    if (overlap <= minOverlap)
+    float overlap = std::max(0.0f, std::min(maxA, maxB) - std::max(minA, minB));
+
+    if (overlap < minOverlap)
     {
       minOverlap = overlap;
       mtvAxis = axis;
     }
   }
 
-  for (int j = 0; j < 4; j++)
+  if (minOverlap > 0.0f)
   {
-    glm::vec2 axis = getNormal(j, rectangle);
+    glm::vec2 mtv = mtvAxis * minOverlap;
 
-    float minA, maxA;
-    minA = maxA = projectVertex(getVertex(0, this), axis);
-    for (int i = 1; i < 4; i++)
+    if (glm::dot(mtv, position - rectangle->position) < 0)
     {
-
-      float projection = projectVertex(getVertex(i, this), axis);
-      minA = std::min(minA, projection);
-      maxA = std::max(maxA, projection);
+      mtv *= -2;
     }
 
-    float minB, maxB;
-    minB = maxB = projectVertex(getVertex(0, rectangle), axis);
+    glm::vec2 relativeVelocity = rectangle->linearVelocity - this->linearVelocity;
+    float velocityAlongNormal = glm::dot(relativeVelocity, mtvAxis);
 
-    for (int i = 1; i < 4; i++)
+    float restitution = std::min(this->restitution, rectangle->restitution);
+    float impulseMagnitude = -(1 + restitution) * velocityAlongNormal / (1 / this->mass + 1 / rectangle->mass);
+
+    glm::vec2 impulse = impulseMagnitude * mtvAxis;
+
+    this->linearVelocity -= impulse / this->mass;
+    rectangle->linearVelocity += impulse / rectangle->mass;
+
+    if (this->isStatic)
     {
-
-      float projection = projectVertex(getVertex(i, rectangle), axis);
-      minB = std::min(minB, projection);
-      maxB = std::max(maxB, projection);
-    }
-
-    if (!intervalsOverlap(minA, maxA, minB, maxB))
-    {
+      rectangle->position -= mtv;
       return;
     }
 
-    float overlap = std::min(maxA, maxB) - std::max(minA, minB);
-    if (overlap <= minOverlap)
-    {
-      minOverlap = overlap;
-      mtvAxis = axis;
-    }
+    this->position += mtv;
   }
-
-  std::cout << mtvAxis.x << mtvAxis.y << std::endl;
-  mtvAxis = glm::normalize(mtvAxis);
-
-  glm::vec2 correction = mtvAxis * (minOverlap * 0.5f);
-
-  if (abs((position.y - (height / 2)) - (rectangle->position.y + (rectangle->height / 2))) < 1 || abs((position.x - (width / 2)) - (rectangle->position.x + (rectangle->width / 2))) < 1)
-  {
-
-    this->position += correction;
-    rectangle->position -= correction;
-  }
-  else
-  {
-
-    this->position -= correction;
-    rectangle->position += correction;
-  }
-
-  glm::vec2 relativeVelocity = rectangle->linearVelocity - this->linearVelocity;
-  float velocityAlongNormal = glm::dot(relativeVelocity, mtvAxis);
-
-  float restitution = std::min(this->restitution, rectangle->restitution);
-  float impulseMagnitude = -(1 + restitution) * velocityAlongNormal / (1 / this->mass + 1 / rectangle->mass);
-
-  glm::vec2 impulse = impulseMagnitude * mtvAxis;
-
-  this->linearVelocity -= impulse / this->mass;
-  rectangle->linearVelocity += impulse / rectangle->mass;
 }
 
 void RigidBody::applyForce(glm::vec2 force, glm::vec2 point)
