@@ -24,8 +24,6 @@ public:
   float mass;
   glm::vec2 forceVector;
   glm::vec2 linearVelocity;
-
-  float momentOfInertia;
   float torque;
   float angularVelocity;
 

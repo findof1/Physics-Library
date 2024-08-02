@@ -15,10 +15,14 @@ RigidBody square(glm::vec2(500.0f, 500.0f), 0.0f, 100.0f, 100.0f, 1.0f);
 
 RigidBody square2(glm::vec2(700.0f, 500.0f), 0.0f, 100.0f, 100.0f, 1.0f);
 
+RigidBody square3(glm::vec2(400.0f, 200.0f), 0.0f, 1000.0f, 100.0f, 1.0f);
+
 int main()
 {
-	square.GRAVITY = glm::vec2(0.0f, 0.0f);
-	square2.GRAVITY = glm::vec2(0.0f, 0.0f);
+	// square.GRAVITY = glm::vec2(0.0f, 0.0f);
+	// square2.GRAVITY = glm::vec2(0.0f, 0.0f);
+	// square3.GRAVITY = glm::vec2(0.0f, 0.0f);
+	square3.isStatic = true;
 
 	float deltaTime;
 	clock_t oldTime = clock();
@@ -35,6 +39,7 @@ int main()
 
 		square.update(deltaTime);
 		square2.update(deltaTime);
+		square3.update(deltaTime);
 
 		processInput(renderer.window);
 
@@ -51,9 +56,13 @@ int main()
 
 		renderer.drawSquare(square2.position, glm::vec2(square2.width, square2.height), square2.rotation, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
 
-		square.resolveCollision(&square2);
+		renderer.drawSquare(square3.position, glm::vec2(square3.width, square3.height), square3.rotation, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
 
-		renderer.renderText("FPS: " + std::to_string(fps), 1000, 500, 1, glm::vec3(1.0f));
+		square.resolveCollision(&square2);
+		square.resolveCollision(&square3);
+		square2.resolveCollision(&square3);
+
+		renderer.renderText("FPS: " + std::to_string(fps), 1000, 1000, 1, glm::vec3(1.0f));
 
 		renderer.displayFrame();
 	}
