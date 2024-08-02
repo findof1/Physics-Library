@@ -34,7 +34,7 @@ public:
   void applyForce(glm::vec2 force, glm::vec2 point = glm::vec2(0.0f, 0.0f));
   void applyTorque(float torqueAdd);
 
-  void resolveCollision(RigidBody *rectangle, double deltaTime, Renderer *renderer);
+  void resolveCollision(RigidBody *rectangle);
 };
 
 #endif

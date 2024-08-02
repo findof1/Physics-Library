@@ -75,7 +75,7 @@ void RigidBody::update(double deltaTime)
   forceVector = glm::vec2(0.0f, 0.0f);
 }
 
-void RigidBody::resolveCollision(RigidBody *rectangle, double deltaTime, Renderer *renderer)
+void RigidBody::resolveCollision(RigidBody *rectangle)
 {
   if (isStatic && rectangle->isStatic)
     return;

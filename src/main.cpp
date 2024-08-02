@@ -51,9 +51,7 @@ int main()
 
 		renderer.drawSquare(square2.position, glm::vec2(square2.width, square2.height), square2.rotation, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
 
-		renderer.drawVector(glm::vec2(600, 600), glm::vec2(100, 200), glm::vec4(1));
-
-		square.resolveCollision(&square2, deltaTime, &renderer);
+		square.resolveCollision(&square2);
 
 		renderer.renderText("FPS: " + std::to_string(fps), 1000, 500, 1, glm::vec3(1.0f));
 
